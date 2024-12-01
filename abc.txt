@@ -1,0 +1,199 @@
+
+{
+    "compilerOptions": {
+      "target": "ESNext",
+      "module": "CommonJS",
+      "outDir": "./dist",
+      "rootDir": "./src",
+      "strict": true,
+      "esModuleInterop": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "**/*.test.ts"]
+  }
+  
+
+
+
+  import nodemailer from 'nodemailer';
+import Agenda from 'agenda';
+
+// Create transporter using Nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, // Your email address
+    pass: process.env.EMAIL_PASS, // Your email password (use App password if 2FA is enabled)
+  },
+});
+
+// Initialize Agenda with direct connection to MongoDB
+const uri = process.env.MONGO_URI as string;
+const agenda = new Agenda({
+  db: {
+    address: uri,  // Mongo URI from environment variable
+    collection: 'jobs',
+  },
+});
+
+// Log when Agenda is connected successfully
+agenda.on('ready', () => {
+  console.log('Agenda connected and ready to accept jobs');
+});
+
+// Log any Agenda errors
+agenda.on('error', (err) => {
+  console.error('Agenda error:', err);
+});
+
+// Schedule Email Controller
+export const scheduleEmail = async (req: { body: { to: any; subject: any; body: any; scheduleTime: any; }; }, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { message: string; error?: unknown; }): void; new(): any; }; }; }) => {
+  const { to, subject, body, scheduleTime } = req.body; // Get email details from request
+
+  console.log('Incoming Request:', { to, subject, body, scheduleTime });
+
+  // Ensure all required fields are provided
+  if (!to || !subject || !body || !scheduleTime) {
+    console.error('Missing required fields:', { to, subject, body, scheduleTime });
+    return res.status(400).json({ message: 'Missing required fields', error: { to, subject, body, scheduleTime } });
+  }
+
+  try {
+    // Ensure Agenda is initialized before defining the job
+    if (!agenda) {
+      console.error('Agenda not initialized');
+      return res.status(500).json({ message: 'Agenda not initialized' });
+    }
+
+    // Define the "send-email" job
+    await agenda.define('send-email', async (job: { attrs: { data: { to: any; subject: any; body: any; }; }; }) => {
+      const { to, subject, body } = job.attrs.data;
+      console.log('Executing "send-email" job with data:', { to, subject, body });
+
+      try {
+        const info = await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to,
+          subject,
+          text: body,
+        });
+        console.log('Email sent successfully:', info);
+      } catch (mailError) {
+        console.error('Failed to send email:', mailError);
+        throw mailError;
+      }
+    });
+
+    // Create and schedule the job
+    const job = await agenda.create('send-email', { to, subject, body }).schedule(new Date(scheduleTime));
+    
+    if (!job) {
+      console.error('Job creation failed');
+      return res.status(500).json({ message: 'Job creation failed' });
+    }
+
+    // Save the job
+    await job.save();
+    console.log('Job scheduled successfully:', job);
+    
+    // Respond with success
+    res.status(200).json({ message: 'Email scheduled successfully!' });
+
+  } catch (error) {
+    console.error('Error scheduling email:', error);
+    res.status(500).json({ message: 'Failed to schedule email', error });
+  }
+};
+
+
+
+import nodemailer from 'nodemailer';
+import Agenda from 'agenda';
+
+// Create transporter using Nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, // Your email address
+    pass: process.env.EMAIL_PASS, // Your email password (use App password if 2FA is enabled)
+  },
+});
+
+// Initialize Agenda with direct connection to MongoDB
+const uri = process.env.MONGO_URI as string;
+const agenda = new Agenda({
+  db: {
+    address: uri,  // Mongo URI from environment variable
+    collection: 'jobs',
+  },
+});
+
+// Log when Agenda is connected successfully
+agenda.on('ready', () => {
+  console.log('Agenda connected and ready to accept jobs');
+});
+
+// Log any Agenda errors
+agenda.on('error', (err) => {
+  console.error('Agenda error:', err);
+});
+
+// Schedule Email Controller
+export const scheduleEmail = async (req: { body: { to: any; subject: any; body: any; scheduleTime: any; }; }, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { message: string; error?: unknown; }): void; new(): any; }; }; }) => {
+  const { to, subject, body, scheduleTime } = req.body; // Get email details from request
+
+  console.log('Incoming Request:', { to, subject, body, scheduleTime });
+
+  // Ensure all required fields are provided
+  if (!to || !subject || !body || !scheduleTime) {
+    console.error('Missing required fields:', { to, subject, body, scheduleTime });
+    return res.status(400).json({ message: 'Missing required fields', error: { to, subject, body, scheduleTime } });
+  }
+
+  try {
+    // Ensure Agenda is initialized before defining the job
+    if (!agenda) {
+      console.error('Agenda not initialized');
+      return res.status(500).json({ message: 'Agenda not initialized' });
+    }
+
+    // Define the "send-email" job
+    await agenda.define('send-email', async (job: { attrs: { data: { to: any; subject: any; body: any; }; }; }) => {
+      const { to, subject, body } = job.attrs.data;
+      console.log('Executing "send-email" job with data:', { to, subject, body });
+
+      try {
+        const info = await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to,
+          subject,
+          text: body,
+        });
+        console.log('Email sent successfully:', info);
+      } catch (mailError) {
+        console.error('Failed to send email:', mailError);
+        throw mailError;
+      }
+    });
+
+    // Create and schedule the job
+    const job = await agenda.create('send-email', { to, subject, body }).schedule(new Date(scheduleTime));
+    
+    if (!job) {
+      console.error('Job creation failed');
+      return res.status(500).json({ message: 'Job creation failed' });
+    }
+
+    // Save the job
+    await job.save();
+    console.log('Job scheduled successfully:', job);
+    
+    // Respond with success
+    res.status(200).json({ message: 'Email scheduled successfully!' });
+
+  } catch (error) {
+    console.error('Error scheduling email:', error);
+    res.status(500).json({ message: 'Failed to schedule email', error });
+  }
+};
+

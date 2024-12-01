@@ -1,0 +1,34 @@
+{
+    "name": "backend",
+    "version": "1.0.0",
+    "main": "dist/server.js",
+    "scripts": {
+        "start": "node dist/server.js",
+        "dev": "ts-node-dev server.ts",
+        "build": "tsc",
+        "lint": "eslint . --ext .ts",
+        "test": "jest",
+        "prettify": "prettier --write src/"
+    },
+    "dependencies": {
+        "agenda": "^5.0.0",
+        "bcryptjs": "^2.4.3",
+        "dotenv": "^10.0.0",
+        "express": "^4.18.2",
+        "jsonwebtoken": "^9.0.0",
+        "mongodb": "^6.11.0",
+        "mongoose": "^8.8.3",
+        "nodemailer": "^6.9.1"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.0",
+        "@types/jest": "^29.0.0",
+        "@types/node": "^20.0.0",
+        "@types/nodemailer": "^6.4.17",
+        "eslint": "^8.0.0",
+        "jest": "^29.0.0",
+        "ts-jest": "^29.0.0",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.3.0"
+    }
+}
