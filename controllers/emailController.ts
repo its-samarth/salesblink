@@ -5,6 +5,9 @@ import Agenda from 'agenda';
 // Create transporter using Nodemailer
 const transporter = nodemailer.createTransport({
   service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587, // or 465 for SSL
+  secure: false, // Use TLS
   auth: {
     user: process.env.EMAIL_USER, // Your email address
     pass: process.env.EMAIL_PASS, // Your email password (use App password if 2FA is enabled)
