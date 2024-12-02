@@ -3,6 +3,9 @@
 
 This backend API schedules emails using Agenda and sends them using NodeMailer.
 
+##   WORKING DEMO
+[video demo](https://drive.google.com/file/d/1g53VpAt1dC7lV1J27mPtEhZ4sCofUQtu/view)
+
 ## API Endpoint
 
 ### `POST /api/schedule-email`
